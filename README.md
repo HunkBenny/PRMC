@@ -8,7 +8,6 @@
 │
 ├───data
 │   └───gold
-│           desktop.ini
 │           test.csv
 │           train.csv
 │           validation.csv
@@ -18,7 +17,6 @@
 │   │
 │   ├───losses
 │   │   └───prmc
-│   │           desktop.ini
 │   │           keras.py
 │   │           xgboost.py
 │   │
