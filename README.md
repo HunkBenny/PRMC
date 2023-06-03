@@ -1,6 +1,6 @@
 # PRMC
 
-
+Repository tree:
 <pre>
 │   LSTM_PRMC.ipynb
 │   README.md
@@ -39,3 +39,6 @@
 └───preprocessing
         keras.py
 </pre>
+
+The notebooks 'LSTM_PRMC.ipynb' and 'XGBOOST_PRMC.ipynb' contain code on training a model with the PRMC as objective.
+In both notebooks, after the "ANALYSIS" cell, an analysis is done with use of the PRMC-metric.
