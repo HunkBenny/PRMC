@@ -1,5 +1,4 @@
 # PRMC
-
 Repository tree:
 <pre>
 │   LSTM_PRMC.ipynb
@@ -39,6 +38,10 @@ Repository tree:
 └───preprocessing
         keras.py
 </pre>
+
+## packages:
+This folder contains code from the hypopt-package that was used during the hyper parameter search.
+**Hypopt GitHub:** https://github.com/cgnorthcutt/hypopt
 
 The notebooks 'LSTM_PRMC.ipynb' and 'XGBOOST_PRMC.ipynb' contain code on training a model with the PRMC as objective.
 In both notebooks, after the "ANALYSIS" cell, an analysis is done with use of the PRMC-metric.
