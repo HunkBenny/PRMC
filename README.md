@@ -46,3 +46,8 @@ This folder contains code from the hypopt-package that was used during the hyper
 ## notebooks:
 The notebooks 'LSTM_PRMC.ipynb' and 'XGBOOST_PRMC.ipynb' contain code on training a model with the PRMC as objective.
 In both notebooks, after the "ANALYSIS" cell, an analysis is done with use of the PRMC-metric.
+
+
+
+## instance-based PRMC was loosely based on:
+https://github.com/bram-janssens/B2Boost
