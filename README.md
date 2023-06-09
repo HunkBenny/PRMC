@@ -40,7 +40,7 @@ Repository tree:
 </pre>
 
 ## packages:
-This folder contains code from the hypopt-package that was used during the hyper parameter search.
+This folder contains code from the hypopt-package that was used during the hyper parameter search.<\br>
 **Hypopt GitHub:** https://github.com/cgnorthcutt/hypopt
 
 ## notebooks:
