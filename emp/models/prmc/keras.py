@@ -1,13 +1,12 @@
 import tensorflow as tf
 import keras
 from keras.models import Model
-import wandb
 
 class PRMCModel(Model):
     """
     PRMCModel for keras. Special train functions etc
     """
-    def compile(self, lossf:keras.losses.Loss, *args, **kwargs):
+    def compile(self, lossf: keras.losses.Loss, *args, **kwargs):
         """
         Compile the model
         Args:
@@ -18,7 +17,7 @@ class PRMCModel(Model):
         self.val_loss_tracker = keras.metrics.Mean(name='val_loss')
         super().compile(*args, **kwargs)
 
-    def train(self, train_dataset:tf.data.Dataset, lossf:keras.losses.Loss, val_dataset:tf.data.Dataset=None,epochs:int=1, callbacks=[]):
+    def train(self, train_dataset: tf.data.Dataset, lossf: keras.losses.Loss, val_dataset: tf.data.Dataset=None, epochs: int=1, callbacks=[]):
         """
         train the model
 
@@ -36,7 +35,7 @@ class PRMCModel(Model):
             self._train(train_dataset, lossf, val_dataset=val_dataset,
                         epochs=epochs, callbacks=callbacks)
 
-    def _train(self, train_dataset:tf.data.Dataset, lossf:keras.losses.Loss, val_dataset:tf.data.Dataset=None,epochs:int=1, callbacks=[]):
+    def _train(self, train_dataset: tf.data.Dataset, lossf: keras.losses.Loss, val_dataset: tf.data.Dataset=None, epochs: int=1, callbacks=[]):
         """
         Train the model, with shared cost of RUL
         Used for training a model with individual costs of rul
@@ -62,16 +61,16 @@ class PRMCModel(Model):
                 self.optimizer.apply_gradients(
                     zip(grads, self.trainable_weights))
                 self.loss_tracker.update_state(loss_value)
-        if val_dataset !=None:
-            for x_batch_val, y_batch_val in val_dataset:
-                preds_val = self(x_batch_val, training=False)
-                val_loss = lossf(y_batch_val, preds_val)
-                self.val_loss_tracker.update_state(val_loss)
+            if val_dataset is not None:
+                for x_batch_val, y_batch_val in val_dataset:
+                    preds_val = self(x_batch_val, training=False)
+                    val_loss = lossf(y_batch_val, preds_val)
+                    self.val_loss_tracker.update_state(val_loss)
 
             print(
                 f"loss: {self.loss_tracker.result()} val_loss: {self.val_loss_tracker.result()}")
 
-    def _train_with_sample_weight(self, train_dataset:tf.data.Dataset, lossf:keras.losses.Loss, val_dataset:tf.data.Dataset=None ,epochs:int=1, callbacks=[]):
+    def _train_with_sample_weight(self, train_dataset: tf.data.Dataset, lossf: keras.losses.Loss, val_dataset: tf.data.Dataset=None, epochs: int=1, callbacks=[]):
         """
         Used for training a model with individual costs of rul
         Args:
@@ -98,13 +97,12 @@ class PRMCModel(Model):
                     zip(grads, self.trainable_weights))
                 self.loss_tracker.update_state(loss_value)
 
-            if val_dataset != None:
+            if val_dataset is not None:
                 for x_batch_val, y_batch_val, ul_batch_val in val_dataset:
                     preds_val = self(x_batch_val, training=False)
                     val_loss = lossf(y_batch_val, preds_val,
-                                    ind_cost_rul=ul_batch_val)
+                                     ind_cost_rul=ul_batch_val)
                     self.val_loss_tracker.update_state(val_loss)
 
             print(
                 f"loss: {self.loss_tracker.result()} val_loss: {self.val_loss_tracker.result()}")
-
