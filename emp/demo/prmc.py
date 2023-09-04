@@ -40,10 +40,11 @@ def prmc_server(input, output, session, preds, trues, num_thresholds):
         thresholds = np.linspace(0.01, 150, num_thresholds)
 
         costs_to_plot = [np.sum(calculate_PRMC(preds, trues, input.tau.get(), ti, input.cost_reactive.get(), input.cost_predictive.get(), cost_rul)) for ti in thresholds]
-        fig_prmc.add_scatter(x=thresholds,
-                              y=costs_to_plot,
-                              name=f"Threshold: {np.round(thresholds[np.argmin(costs_to_plot)], 2)} Cost: {np.round(np.min(costs_to_plot)):_}",
-                              hovertemplate="Threshold: %{x} <br>Cost: %{y}"
+        fig_prmc.add_scatter(
+                        x=thresholds,
+                        y=costs_to_plot,
+                        name=f"Threshold: {np.round(thresholds[np.argmin(costs_to_plot)], 2)} Cost: {np.round(np.min(costs_to_plot)):_}",
+                        hovertemplate="Threshold: %{x} <br>Cost: %{y}"
                     )
 
         return fig_prmc

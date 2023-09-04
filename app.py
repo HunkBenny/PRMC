@@ -1,6 +1,6 @@
 from shiny import App, ui
 
-from emp.demo import prmc, eprmc, simulation, home, info
+from emp.demo import prmc, eprmc, simulation, home, info, game
 
 from pathlib import Path
 
@@ -34,7 +34,7 @@ app_ui = ui.page_fluid(
     shinyswatch.theme.pulse(),
     ui.navset_pill(
         info.info_ui('info_ui'),
-        # home.home_ui('home_ui'),
+        game.game_ui('game_ui'),
         ui.nav_menu(
             'Extra',
             simulation.simulation_ui('simulation_ui'),
@@ -47,7 +47,7 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
     info.info_server('info_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
-    # home.home_server('home_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
+    game.game_server('game_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
     prmc.prmc_server('prmc_ui', preds, trues, num_thresholds)
     eprmc.eprmc_server('eprmc_ui', preds, trues, num_thresholds)
     simulation.simulation_server('simulation_ui')
