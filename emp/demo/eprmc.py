@@ -5,15 +5,17 @@ import numpy as np
 from multiprocessing import Queue, Process
 from ..metrics.maintenance import calculate_EPRMC
 
+
+import time
 @module.ui
 def eprmc_ui(cost_reactive, cost_predictive):
     return ui.nav("EPRMC",
            ui.layout_sidebar(  # upper figure
                ui.panel_sidebar(
-                   ui.input_numeric('cost_reactive_eprmc', 'Cost Reactive (in millions)', cost_reactive, step=1),
-                   ui.input_numeric('cost_predictive_eprmc', 'Cost Predictive (in millions)', cost_predictive, step=1),
+                   ui.input_numeric('cost_reactive_eprmc', 'Cost Reactive (in thousands)', cost_reactive, step=1),
+                   ui.input_numeric('cost_predictive_eprmc', 'Cost Predictive (in thousands)', cost_predictive, step=1),
                    ui.input_numeric('tau_eprmc', 'Lead Time', 12, step=1),
-                   ui.input_numeric('acquisition_price_eprmc', 'Acquisition Price (in millions)', 50, step=1),
+                   ui.input_numeric('acquisition_price_eprmc', 'Acquisition Price (in thousands)', 50, step=1),
                    ui.input_action_button("compute_eprmc", "Compute!"),
                    width=2.5  # type: ignore
                ),
@@ -61,6 +63,7 @@ def eprmc_server(input, output, session, preds, trues, num_thresholds):
     @render_widget
     @reactive.event(input.compute_eprmc)
     async def eprmc_plot():
+        start = time.time()
         cost_rul = input.acquisition_price_eprmc.get() / np.amax(trues, 1)
         thresholds = np.linspace(0.01, 150, num_thresholds)
         costs_to_plot = multi_process_eprmc(thresholds, preds, trues, input.cost_reactive_eprmc.get(), input.cost_predictive_eprmc.get(), cost_rul)
@@ -69,6 +72,7 @@ def eprmc_server(input, output, session, preds, trues, num_thresholds):
                               name=f"Threshold: {np.round(thresholds[np.argmin(costs_to_plot)], 2)} Cost: {np.round(np.min(costs_to_plot)):_}",
                               hovertemplate="Threshold: %{x} <br>Cost: %{y}"
                      )
+        print(time.time() - start)
         return fig_eprmc
 
     @output

@@ -1,9 +1,7 @@
-from shiny import module, ui, reactive, render
-from shinywidgets import output_widget, render_widget, register_widget
+from shiny import module, ui, render
+from shinywidgets import output_widget, render_widget
 import plotly.graph_objects as go
 import numpy as np
-from plotly import colors
-import pandas as pd
 from ..metrics.maintenance import calculate_PRMC
 
 @module.ui
@@ -11,59 +9,73 @@ def info_ui():
     return ui.nav('Info',
                 ui.div(
                     ui.row(
-                        ui.column(8,
-                            ui.img(src='DNM-at-Arrowsmith-scaled-2-875x625.jpg', style='width:100%'),
-                                style="display:inline-flex;width:fit-content;flex: 1 2  66vw;height:fit-content;max-width:800px;"
-                            ),
-                        ui.column(4,
-                            ui.h2('Problem Statement'),
-                            ui.p('For many organisations in the manufacturing industry, maintenance costs are substantial. Therefore, it is preferable to optimize these costs. '
-                                'Different sources estimate that proactive maintenance policies tend to be more cost-effective than reactive maintenance policies. ',
-                                style='width:100%;word-wrap:break-word;'),
-                            ui.HTML('<ol>'
-                                    '<li>Preventive maintenance is purely based on time. Coming up with regular, intelligent maintenance intervals is at the basis of it all.</li>'
-                                    '<li>Predictive maintenance is based on data! More and more machines are equipped with different types of sensors, which can in turn be used to predict when maintenance should be conducted.</li>'
-                                    '</ol>'
-                                    ),
-                            style="display:block;width:fit-content;height:fit-content;flex: 2 1 34vw;",
-                            ),
-                        ),
+                        ui.h1('Machine learning for maintenance', {"class": "text-primary", "style":"text-align:center"}),
+                        ui.HTML('<hr>')
+                    ),
                     ui.row(
-                            ui.p('The focus of this demo is on predictive maintenance. Every day, for a machine, all sensor measurements are used in a Machine Learning model to come up with an estimate of the Remaining Useful Life (RUL). If the predicted RUL is small, then the ML-model predicts that the machine is going to fail in the nearby future.', style='width:100%;word-wrap:break-word;'),
-                            style='display:block;width:fit-content;height:fit-content;'
+                        ui.column(
+                            8,
+                            ui.img(src='DNM-at-Arrowsmith-scaled-2-875x625.jpg', style='width:100%'),
+                            style="display:inline-flex;width:fit-content;flex: 1 2  66vw;height:fit-content;max-width:800px;"
                         ),
+                        ui.column(
+                            4,
+                            ui.h2('Problem Statement'),
+                            ui.p('For many organisations in the manufacturing industry, maintenance costs are substantial. Therefore, it is preferable to minimize these costs. '
+                                'Different sources estimate that proactive maintenance policies tend to be more cost-effective than reactive maintenance policies. '
+                                'A distinguishisment is made between preventive maintenance and predictive maintenance.',
+                                style='width:100%;word-wrap:break-word;'),
+                            ui.HTML(
+                                '<ol>'
+                                '<li>Preventive maintenance is purely based on time. Coming up with regular, intelligent maintenance intervals is at the basis of it all.</li>'
+                                '<li>Predictive maintenance is based on data! More and more machines are equipped with different types of sensors, which can in turn be used to predict when maintenance should be conducted.</li>'
+                                '</ol>'
+                            ),
+                            ui.p(
+                                'The focus of this demo is on predictive maintenance. Every day, for a machine, all sensor measurements are used in a Machine Learning model to come up with an estimate of the Remaining Useful Life (RUL). If the predicted RUL is small, then the ML-model predicts that the machine is going to fail in the nearby future.', style='width:100%;word-wrap:break-word;'),
+                            style="display:block;width:fit-content;height:fit-content;flex: 2 1 34vw;",
+                        ),
+                    ),
+                    ui.br(),
                     ui.row(
                         ui.h2('Costs of maintenance'),
                         ui.p('There are two possible cost scenarios in this demo:'),
-                                ui.HTML(
-                                    '<ol>'
-                                    '<li>The machine fails and needs to be repaired. This is the cost of reactive maintenance.</li>'
-                                    '<li>The machine is repaired before a failure occurs. This is the cost of predictive maintenance PLUS an opportunity cost.</li>'
-                                    '</ol>'),
-                                ui.h5('Cost of reactive maintenance', {"class": "text-primary"}),
-                                ui.p(
-                                    'If a machine fails, it needs to be repaired. This often happens at a premium price, as maintenance needs to occur urgently. '
-                                    'Some sources state that this cost is on average three times larger than the cost of predictive maintenance.'
-                                    ),
-                                ui.h5('Cost of predictive maintenance', {"class": "text-primary"}),
-                                ui.p(
-                                    'If maintenance happens before failure, there are two costs:'
-                                    ),
-                                ui.HTML(
-                                    '<ol>'
-                                    '<li>Cost of the predictive maintenance itself.</li>'
-                                    '<li>An opportunity cost: the cost of the lost RUL.</li>'
-                                    '</ol>'
-                                ),
-                                ui.h6('Opportunity cost', {"class": "text-secondary"}),
-                                ui.p(
-                                    'The opportunity cost is equal to the amount of useful life which remained at the time of maintenance.'
-                                    ' So, if a machine is repaired while it still had a RUL of 10 weeks, then the opportunity cost is equal '
-                                    'to the lost value that could have been created in these 10 weeks. This lost value is of course different for every organisation. '
-                                    'However, a baseline is based on the concept of depreciation. So, in order to calculate the cost of lost productivity '
-                                    'only the acquisition price of a machine is needed.'
-                                    ),
+                        ui.HTML(
+                            '<ol>'
+                            '<li>The machine fails and needs to be repaired. This is the cost of reactive maintenance.</li>'
+                            '<li>The machine is repaired before a failure occurs. This is the cost of predictive maintenance PLUS an opportunity cost.</li>'
+                            '</ol>'),
+                        ui.h5('Cost of reactive maintenance', {"class": "text-primary"}),
+                        ui.p(
+                            'If a machine fails, it needs to be repaired. This often happens at a premium price, as maintenance needs to occur urgently. '
+                            'Some sources state that this cost is on average three times larger than the cost of predictive maintenance.'
                         ),
+                        ui.h5('Cost of predictive maintenance', {"class": "text-primary"}),
+                        ui.p(
+                            'If maintenance happens before failure, there are two costs:'
+                        ),
+                        ui.HTML(
+                            '<ol>'
+                            '<li>Cost of the predictive maintenance itself.</li>'
+                            '<li>An opportunity cost: the cost of the lost RUL.</li>'
+                            '</ol>'
+                        ),
+                        ui.h6('Opportunity cost', {"class": "text-secondary"}),
+                        ui.p(
+                            'The opportunity cost is equal to the amount of useful life which remained at the time of maintenance.'
+                            ' So, if a machine is repaired while it still had a RUL of 10 weeks, then the opportunity cost is equal '
+                            'to the lost value that could have been created in these 10 weeks. This lost value is of course different for every organisation. '
+                            'However, a baseline is based on the concept of depreciation. So, in order to calculate the cost of lost productivity '
+                            'only the acquisition price of a machine is needed.'
+                        ),
+                        ui.h5('The Pure RUL Maintenance Cost (PRMC)', {"class": "text-primary"}),
+                        ui.p(
+                            'These costs can be combined in one metric, the so-called PRMC. '
+                            'This metric can in turn be adapted to a custom loss-function to be used during training. '
+                            'This way, instead of using a standard statistical loss (such as the RMSE), the maintenance costs can be minimized directly. '
+                            ''
+                        )
+                    ),
                     ui.row(
                         ui.h2('Policy instrument'),
                         ui.p('In order to lower these costs, an organisation conducts maintenance when the predicted RUL of a machine is lower than or equal to a certain threshold. '
@@ -71,13 +83,13 @@ def info_ui():
                             'It is chosen for all machines in the dataset. '),
                         ui.br(),
                         ui.p('Go ahead and fiddle around with the figure below, as you change the threshold, the moment of maintenance changes as well.'),
-                        ),
-                        output_widget('policy_instrument_plot'),
-                        ui.div(
-                            ui.input_slider('policy_instrument_threshold', 'Threshold', 0, 50, 1),
-                            ui.output_ui("policy_instrument_contents"),
-                            style="display:flex;"
-                        ),
+                    ),
+                    output_widget('policy_instrument_plot'),
+                    ui.div(
+                        ui.input_slider('policy_instrument_threshold', 'Threshold', 0, 50, 1),
+                        ui.output_ui("policy_instrument_contents"),
+                        style="display:flex;justify-content:space-evenly"
+                    ),
                     ui.row(
                         ui.h2('Lead time'),
                         ui.p('Of course, maintenance rarely happens immediately. Usually, an organization does not have i) the required parts and/or ii) '
@@ -92,20 +104,20 @@ def info_ui():
                                 ui.input_slider('lead_time_tau', 'Lead Time', 0, 50, 10)
                             ),
                             ui.output_ui("lead_time_contents"),
-                            style="display:flex;"
+                            style="display:flex;justify-content:space-evenly;"
                         ),
                         ui.HTML('<i>Note: often the lead times are uncertain, so instead, a range or distribution of lead times will be used to calculate the cost of maintenance. '
                                 'This uncertainty will be explained in pane 3.</i>'
                                 )
-                        )
-                    )
+                    ),
                 )
+            )
 
 @module.server
 def info_server(input, output, session, preds, trues, cost_reactive, cost_predictive, cost_rul):
 
     @output
-    @render_widget
+    @render_widget  # type: ignore
     def policy_instrument_plot():
         mach = 74
         fig_preds = go.Figure(
@@ -114,19 +126,19 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 "title_text": "Simulation RUL for one machine.",
                 "title_x": 0.5,
                 "title_font_size": 25,
-                }
-            )
+            }
+        )
         fig_preds.add_scatter(
             x=np.arange(0, preds.shape[1]),
             y=preds[mach, :],
             name="Predicted RUL"
-            )
+        )
         fig_preds.add_scatter(
             x=np.arange(0, trues.shape[1]),
             y=trues[mach, :],
             name="True RUL",
             mode='lines'
-            )
+        )
         threshold = input.policy_instrument_threshold()
         timestamp_maintenance = np.amin(np.argwhere(preds[mach, :] <= threshold))
         timestamp_failure = np.amin(np.argwhere(trues[mach, :] == 0))
@@ -188,7 +200,7 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
             fig_preds.add_scatter(
                 x=[timestamp_maintenance, timestamp_failure],
                 y=[0, 0],
-                name=f"Lost RUL",
+                name="Lost RUL",
                 line={
                     "color": "green",
                     "width": 2
@@ -213,10 +225,10 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
         else:
             style = 'class="text-success"'
             text_cost = 'Machine repaired before failure occured.'
-        return ui.HTML(f"<b {style}>COST:</b> {cost:_}</br><p {style}>{text_cost}</p>")
+        return ui.HTML(f"<b {style}>COST:</b> €{cost:_} (thousands)</br><p {style}>{text_cost}</p>")
 
     @output
-    @render_widget
+    @render_widget  # type: ignore
     def lead_time_plot():
         mach = 74
         tau = input.lead_time_tau()
@@ -226,19 +238,19 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 "title_text": "Simulation RUL for one machine.",
                 "title_x": 0.5,
                 "title_font_size": 25,
-                }
-            )
+            }
+        )
         fig_preds.add_scatter(
             x=np.arange(0, preds.shape[1]),
             y=preds[mach, :],
             name="Predicted RUL"
-            )
+        )
         fig_preds.add_scatter(
             x=np.arange(0, trues.shape[1]),
             y=trues[mach, :],
             name="True RUL",
             mode='lines'
-            )
+        )
         threshold = input.lead_time_threshold()
         timestamp_maintenance = np.amin(np.argwhere(preds[mach, :] <= threshold))
         timestamp_failure = np.amin(np.argwhere(trues[mach, :] == 0))
@@ -274,7 +286,7 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
         if timestamp_maintenance + tau < timestamp_failure:
             # LOST RUL ARROW:
             fig_preds.add_annotation(
-                ax=timestamp_maintenance+tau,
+                ax=timestamp_maintenance + tau,
                 y=0,
                 x=timestamp_failure,
                 ay=0,
@@ -288,7 +300,7 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
             fig_preds.add_annotation(
                 ax=timestamp_failure,
                 y=0,
-                x=timestamp_maintenance+tau,
+                x=timestamp_maintenance + tau,
                 ay=0,
                 axref='x',
                 showarrow=True,
@@ -298,9 +310,9 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 arrowcolor='green'
             )
             fig_preds.add_scatter(
-                x=[timestamp_maintenance+tau, timestamp_failure],
+                x=[timestamp_maintenance + tau, timestamp_failure],
                 y=[0, 0],
-                name=f"Lost RUL",
+                name="Lost RUL",
                 line={
                     "color": "green",
                     "width": 2
@@ -324,7 +336,7 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
         mach = 74
         tau = input.lead_time_tau()
         threshold = input.lead_time_threshold()
-        cost = np.sum(calculate_PRMC(preds[mach, :], trues[mach, :], tau, threshold, cost_reactive, cost_predictive, cost_rul[mach]))
+        cost = np.round(np.sum(calculate_PRMC(preds[mach, :], trues[mach, :], tau, threshold, cost_reactive, cost_predictive, cost_rul[mach])), 3)
         if cost_reactive == cost:
             style = 'class="text-warning"'
             text_cost = 'Machine failed. Cost of failure.'
@@ -334,4 +346,4 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
         else:
             style = 'class="text-success"'
             text_cost = 'Machine repaired before failure occured.'
-        return ui.HTML(f"<b>COST:</b> {cost:_}</br><p {style}>{text_cost}</p>")
+        return ui.HTML(f"<b>COST:</b> €{cost:_} (thousands)</br><p {style}>{text_cost}</p>")

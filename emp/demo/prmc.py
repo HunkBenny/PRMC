@@ -113,10 +113,10 @@ def prmc_ui(cost_reactive, cost_predictive):
     return ui.nav("PRMC",  # PRMC tab
            ui.layout_sidebar(  # upper figure
                ui.panel_sidebar(
-                   ui.input_numeric('cost_reactive', 'Cost Reactive (in millions)', cost_reactive, step=1),
-                   ui.input_numeric('cost_predictive', 'Cost Predictive (in millions)', cost_predictive, step=1),
+                   ui.input_numeric('cost_reactive', 'Cost Reactive (in thousands)', cost_reactive, step=1),
+                   ui.input_numeric('cost_predictive', 'Cost Predictive (in thousands)', cost_predictive, step=1),
                    ui.input_numeric('tau', 'Lead Time', 12, step=1),
-                   ui.input_numeric('acquisition_price', 'Acquisition Price (in millions)', 50, step=1),
+                   ui.input_numeric('acquisition_price', 'Acquisition Price (in thousands)', 50, step=1),
                    ui.input_action_button("compute_prmc", "Compute!"),
                    width=2.5  # type: ignore
                ),

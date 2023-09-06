@@ -16,20 +16,21 @@ selected_cols = ["T24", "T30", "T50", "P30"]
 @module.ui
 def simulation_ui():
     return ui.nav('Simulation',
-            ui.layout_sidebar(
-                    ui.panel_sidebar(
-                        ui.output_ui("contents"),
-                        ui.input_switch('hold', 'Hold'),
-                        ui.input_action_button('reset_clock', 'Reset history'),
-                        ui.HTML("<b>"),
-                        ui.input_select('selected_mach', 'Machine', all_choices, selected=all_choices[0], multiple=True),
-                        ui.HTML("</b>"),
-                        width=2,
-                    ),
-                    ui.panel_main(output_widget('simulation_plot')
-                    )
-                )
+        ui.layout_sidebar(
+            ui.panel_sidebar(
+                ui.output_ui("contents"),
+                ui.input_switch('hold', 'Hold'),
+                ui.input_action_button('reset_clock', 'Reset history'),
+                ui.HTML("<b>"),
+                ui.input_select('selected_mach', 'Machine', all_choices, selected=all_choices[0], multiple=True),
+                ui.HTML("</b>"),
+                width=2,
+            ),
+            ui.panel_main(
+                output_widget('simulation_plot')
             )
+        )
+    )
 
 
 @module.server
@@ -53,7 +54,7 @@ def simulation_server(input, output, session):
             return 0
 
     @output
-    @render_widget
+    @render_widget  # type: ignore
     def simulation_plot():
         global basetable
         selected_mach = input.selected_mach()[0] if len(input.selected_mach()) == 1 else input.selected_mach()  # selecting multiple is possible atm. perhaps change this def so it allows for the plotting of multiple machs

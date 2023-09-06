@@ -1,10 +1,7 @@
 from shiny import module, ui, reactive, render
-from shinywidgets import output_widget, render_widget, register_widget
+from shinywidgets import output_widget, render_widget
 from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 import numpy as np
-from plotly import colors
-import pandas as pd
 from ..metrics.maintenance import calculate_PRMC
 import random
 import scipy.stats as st
@@ -26,6 +23,7 @@ def game_ui():
                             ui.HTML('<h5 style="text-align: center">Total Cost</h5>'),
                             ui.output_ui('score_history'),
                             ui.HTML('<hr>'),
+                            ui.HTML('<h5 style="text-align: center">Last Cost</h5>'),
                             ui.output_ui('score_contents'),
                             width=3
                     ),
@@ -50,23 +48,17 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
     score_cpu = reactive.Value(0)
 
     @output
-    @render_widget
+    @render_widget  # type: ignore
     def plot_game_machines():
         fig_preds = make_subplots(
             rows=4,
             subplot_titles=list(map(lambda x: "Machine: " + str(x), machs()))
-            # layout={
-            #     "hovermode": "x",
-            #     "title_text": "Simulation RUL for one machine.",
-            #     "title_x": 0.5,
-            #     "title_font_size": 25,
-            #     }
-            )
+        )
         threshold = input.game_threshold()
         legend = True
         for row_num, mach in enumerate(machs()):
             row_num += 1
-            if row_num > 1:  # only want the legend in case of 
+            if row_num > 1:  # only keep legend for first figure
                 legend = False
             timestamp_maintenance = np.amin(np.argwhere(preds[mach, :] <= threshold))
             timestamp_failure = np.amin(np.argwhere(trues[mach, :] == 0))
@@ -81,7 +73,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                     "color": 'blue'
                 },
                 showlegend=legend
-                )
+            )
             fig_preds.add_scatter(
                 row=row_num,
                 col=1,
@@ -99,7 +91,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                     "color": 'purple'
                 },
                 name='Threshold',
-                showlegend= legend
+                showlegend=legend
             )
             fig_preds.add_scatter(
                 row=row_num,
@@ -114,14 +106,20 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 showlegend=legend
             )
             fig_preds.add_vline(
-                row=row_num,
-                col=1,
+                row=row_num,  # type: ignore
+                col=1,  # type: ignore
                 x=timestamp_maintenance,
                 line_color="black",
             )
             # update layout
             fig_preds.update_layout(
-                height=800
+                **{
+                    "height": 800,
+                    "hovermode": "x unified",
+                    "title_text": "Simulation RUL for four machines.",
+                    "title_x": 0.5,
+                    "title_font_size": 25,
+                }
             )
         return fig_preds
 
@@ -160,6 +158,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
             optimal_idx = np.argmin(costs)
             cost_optimal = np.round(costs[optimal_idx], 2)
             optimal_threshold = thresholds[optimal_idx]
+            optimal_threshold = 15
             cost_player = np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), input.game_threshold(), cost_reactive, cost_predictive, cost_rul[machs()])), 2)
 
         if cost_optimal < cost_player:
@@ -197,4 +196,4 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
             '<table class="table table-hover">'
             '<tr><th></th><th class="table-primary">CPU</th><th class="table-primary">PLAYER</th></tr>'
             f'<tr><th class="table-primary" style="text-align:left">Cost</th><td class="table-secondary">{score_cpu()}</td><td class="table-secondary">{score_user()}</td></tr>'
-            )
+        )

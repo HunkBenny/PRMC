@@ -139,7 +139,6 @@ def calculate_PRMC(pred: Union[float, np.ndarray], true: Union[float, np.ndarray
             return _calculate_PRMC_one_dim(pred, true, tau, threshold, cost_reactive, cost_predictive, cost_rul)
         else:
             return _calculate_PRMC(pred, true, tau, threshold, cost_reactive, cost_predictive, cost_rul)
-
     return _calculate_PRMC_point(pred, true, tau, threshold, cost_reactive, cost_predictive, cost_rul)
 
 def calculate_EPRMC(pred_rul: Union[float, np.ndarray], true_rul: Union[float, np.ndarray], threshold: int, cost_reactive: float, cost_predictive: float, cost_rul: Union[float, np.ndarray], limit: int=150, tau_distr=None, upper_bound=0.99, step_size=0, num_samples=0, tau_rvs=partial(st.lognorm.rvs, s=1.2, scale=6)) -> Union[float, np.ndarray]:
@@ -199,6 +198,7 @@ def _calculate_EPRMC(pred_rul: float, true_rul: float, tau_distr, upper_bound: f
     Returns:
         float: EPRMC
     """
+
 # MC integration
     if num_samples:
         samples = np.zeros(num_samples)
@@ -217,7 +217,12 @@ def _calculate_EPRMC(pred_rul: float, true_rul: float, tau_distr, upper_bound: f
         return np.sum(cost * x)
 
 # Integration
-    return integrate.quad(lambda tau: np.multiply(calculate_PRMC(pred_rul, true_rul, tau, threshold, cost_reactive, cost_predictive, cost_rul), tau_distr(tau)), 0, upper_bound, limit=limit)[0]
+    if true_rul > upper_bound:
+        prob_reactive = 0
+    else:
+        prob_reactive = (1 - st.lognorm.cdf(true_rul, **tau_distr.keywords)) - (1 - st.lognorm.cdf(upper_bound, **tau_distr.keywords))
+        upper_bound = true_rul
+    return prob_reactive * cost_reactive + integrate.quad(lambda tau: np.multiply(calculate_PRMC(pred_rul, true_rul, tau, threshold, cost_reactive, cost_predictive, cost_rul), tau_distr(tau)), 0, upper_bound, limit=limit)[0]
 
 def _calculate_EPRMC_one_dim(pred_rul: np.ndarray, true_rul: np.ndarray, tau_distr, upper_bound: float, threshold: int, cost_reactive: float, cost_predictive: float, cost_rul: Union[float, np.ndarray], limit: int=150, step_size=0, num_samples=0, tau_rvs=partial(st.lognorm.rvs, s=1.2, scale=6)) -> np.ndarray:
     """
