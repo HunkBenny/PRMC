@@ -9,7 +9,7 @@ def info_ui():
     return ui.nav('Info',
                 ui.div(
                     ui.row(
-                        ui.h1('Machine learning for maintenance', {"class": "text-primary", "style":"text-align:center"}),
+                        ui.h1('Machine learning for maintenance', {"class": "text-primary", "style": "text-align:center"}),
                         ui.HTML('<hr>')
                     ),
                     ui.row(
@@ -23,7 +23,7 @@ def info_ui():
                             ui.h2('Problem Statement'),
                             ui.p('For many organisations in the manufacturing industry, maintenance costs are substantial. Therefore, it is preferable to minimize these costs. '
                                 'Different sources estimate that proactive maintenance policies tend to be more cost-effective than reactive maintenance policies. '
-                                'A distinguishisment is made between preventive maintenance and predictive maintenance.',
+                                'A distinguishment is made between preventive maintenance and predictive maintenance.',
                                 style='width:100%;word-wrap:break-word;'),
                             ui.HTML(
                                 '<ol>'
@@ -36,7 +36,7 @@ def info_ui():
                             style="display:block;width:fit-content;height:fit-content;flex: 2 1 34vw;",
                         ),
                     ),
-                    ui.br(),
+                    ui.HTML('<hr>'),
                     ui.row(
                         ui.h2('Costs of maintenance'),
                         ui.p('There are two possible cost scenarios in this demo:'),
@@ -76,11 +76,15 @@ def info_ui():
                             ''
                         )
                     ),
+                    ui.HTML('<hr>'),
                     ui.row(
                         ui.h2('Policy instrument'),
                         ui.p('In order to lower these costs, an organisation conducts maintenance when the predicted RUL of a machine is lower than or equal to a certain threshold. '
                             'This threshold is the policy instrument that the management can optimize to achieve lower maintenance costs. '
-                            'It is chosen for all machines in the dataset. '),
+                            'It is only chosen once for all machines in the dataset. '
+                            'For example, if the threshold is set to 10 days, then maintenance will be scheduled as soon as the predicted RUL '
+                            '≤ 10.'
+                        ),
                         ui.br(),
                         ui.p('Go ahead and fiddle around with the figure below, as you change the threshold, the moment of maintenance changes as well.'),
                     ),
@@ -90,6 +94,7 @@ def info_ui():
                         ui.output_ui("policy_instrument_contents"),
                         style="display:flex;justify-content:space-evenly"
                     ),
+                    ui.HTML('<hr>'),
                     ui.row(
                         ui.h2('Lead time'),
                         ui.p('Of course, maintenance rarely happens immediately. Usually, an organization does not have i) the required parts and/or ii) '
@@ -103,7 +108,10 @@ def info_ui():
                                 ui.input_slider('lead_time_threshold', 'Threshold', 0, 50, 30),
                                 ui.input_slider('lead_time_tau', 'Lead Time', 0, 50, 10)
                             ),
-                            ui.output_ui("lead_time_contents"),
+                            ui.div(
+                                ui.output_ui("lead_time_contents"),
+                                ui.input_switch('lead_time_moment_maintenance', 'Show the moment of maintenance?')
+                            ),
                             style="display:flex;justify-content:space-evenly;"
                         ),
                         ui.HTML('<i>Note: often the lead times are uncertain, so instead, a range or distribution of lead times will be used to calculate the cost of maintenance. '
@@ -215,7 +223,7 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
         mach = 74
         tau = 0
         threshold = input.policy_instrument_threshold()
-        cost = np.sum(calculate_PRMC(preds[mach, :], trues[mach, :], tau, threshold, cost_reactive, cost_predictive, cost_rul[mach]))
+        cost = np.round(np.sum(calculate_PRMC(preds[mach, :], trues[mach, :], tau, threshold, cost_reactive, cost_predictive, cost_rul[mach])), 3)
         if cost_reactive == cost:
             style = 'class="text-warning"'
             text_cost = 'Machine failed. Cost of failure.'
@@ -274,14 +282,14 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
             x=[timestamp_maintenance, timestamp_maintenance],
             y=[0, max(trues[mach, :])],
             line={
-                "color": 'black'
+                "color": 'grey'
             },
             mode='lines',
-            name="Moment of Maintenance"
+            name="Moment of scheduling maintenance"
         )
         fig_preds.add_vline(
             x=timestamp_maintenance,
-            line_color="black"
+            line_color="grey"
         )
         if timestamp_maintenance + tau < timestamp_failure:
             # LOST RUL ARROW:
@@ -328,6 +336,12 @@ def info_server(input, output, session, preds, trues, cost_reactive, cost_predic
             name="Lead Time",
             fillcolor="rgba(239, 163, 29, 0.5)",
         )
+        if input.lead_time_moment_maintenance():
+            fig_preds.add_vline(
+                x=timestamp_maintenance + tau,
+                annotation_text='Moment of maintenance',
+                line_color='black'
+            )
         return fig_preds
 
     @output

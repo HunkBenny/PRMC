@@ -1,6 +1,6 @@
 from shiny import App, ui
 
-from emp.demo import prmc, eprmc, simulation, info, game, uncertainty
+from emp.demo import prmc, eprmc, simulation, info, game, uncertainty, faq
 
 from pathlib import Path
 
@@ -40,6 +40,8 @@ app_ui = ui.page_fluid(
             'Extra',
             uncertainty.uncertainty_ui('uncertainty_ui', preds),
             simulation.simulation_ui('simulation_ui'),
+            faq.faq_ui('faq_ui'),
+            ui.HTML('<hr style="margin-top:0px;margin-bottom:0px;">'),
             prmc.prmc_ui('prmc_ui', cost_reactive, cost_predictive),
             eprmc.eprmc_ui('eprmc_ui', cost_reactive, cost_predictive),
         ),

@@ -15,6 +15,7 @@ def game_ui():
                 ui.layout_sidebar(
                     ui.panel_sidebar(
                             ui.output_ui('selected_tau'),
+                            ui.input_switch('show_tau', 'Show lead time'),
                             ui.HTML('<hr>'),
                             ui.input_slider('game_threshold', 'Threshold', 0, 50, 10),
                             ui.input_action_button('game_submit', 'Submit!', **{"class": 'btn btn-primary'}),
@@ -74,6 +75,19 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 },
                 showlegend=legend
             )
+            last_pred_rul = [preds[mach, timestamp_failure]]
+            last_pred_rul.extend(list(np.repeat(0, 100)))
+            fig_preds.add_scatter(
+                row=row_num,
+                col=1,
+                x=np.arange(timestamp_failure - 1, timestamp_failure + 100),
+                y=last_pred_rul,
+                line={
+                    "color": 'blue'
+                },
+                showlegend=False,
+                hoverinfo=' skip'
+            )
             fig_preds.add_scatter(
                 row=row_num,
                 col=1,
@@ -86,7 +100,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                     "dash": 'dot'
                 },
                 text=["Threshold", ""],
-                textposition='top center',
+                textposition='top right',
                 textfont={
                     "color": 'purple'
                 },
@@ -111,16 +125,24 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 x=timestamp_maintenance,
                 line_color="black",
             )
-            # update layout
-            fig_preds.update_layout(
-                **{
-                    "height": 800,
-                    "hovermode": "x unified",
-                    "title_text": "Simulation RUL for four machines.",
-                    "title_x": 0.5,
-                    "title_font_size": 25,
-                }
-            )
+            if input.show_tau():
+                fig_preds.add_vline(
+                    row=row_num,
+                    col=1,
+                    x=timestamp_maintenance + tau(),
+                    line_color='orange'
+                )
+            fig_preds.update_xaxes({'range': [0, timestamp_failure]}, row=row_num, col=1)
+        # update layout
+        fig_preds.update_layout(
+            **{
+                "height": 800,
+                "hovermode": "x unified",
+                "title_text": "Simulation RUL for four machines.",
+                "title_x": 0.5,
+                "title_font_size": 25,
+            }
+        )
         return fig_preds
 
     @reactive.Effect
@@ -147,7 +169,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
             with reactive.isolate():
                 prev_tau.set(tau())
             tau.set(int(np.round(leadtime_dist(), 0)))
-        return ui.HTML(f'<h3>Current lead time: {tau()}</h3>')
+        return ui.HTML(f'<h3>Current lead time: <a style="color:red;font-size:1.25em"> {tau()}</a></h3>')
 
     @output
     @render.ui
