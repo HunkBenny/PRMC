@@ -33,6 +33,7 @@ app_ui = ui.page_fluid(
     ui.HTML('<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>'),
     ui.include_css(static / "custom.css"),
     shinyswatch.theme.pulse(),
+    ui.img(src='FlandersMakeUGent.png', style="width:125px;position:fixed;right:0;z-index:1"),
     ui.navset_pill(
         info.info_ui('info_ui'),
         game.game_ui('game_ui'),
@@ -45,7 +46,7 @@ app_ui = ui.page_fluid(
             prmc.prmc_ui('prmc_ui', cost_reactive, cost_predictive),
             eprmc.eprmc_ui('eprmc_ui', cost_reactive, cost_predictive),
         ),
-    )
+    ),
 )
 
 def server(input, output, session):
