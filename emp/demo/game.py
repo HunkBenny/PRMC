@@ -1,4 +1,5 @@
 from shiny import module, ui, reactive, render
+import shiny.experimental as x
 from shinywidgets import output_widget, render_widget
 from plotly.subplots import make_subplots
 import numpy as np
@@ -9,23 +10,138 @@ from functools import partial
 
 leadtime_dist = partial(st.lognorm.rvs, s=1.2, scale=6)
 
+tooltip_icon = ui.HTML('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-octagon" viewBox="0 0 16 16">'
+    '<path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1H5.1z"/>'
+    '<path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>'
+    '</svg>'
+)
+
 @module.ui
 def game_ui():
     return ui.nav('Game',
                 ui.layout_sidebar(
                     ui.panel_sidebar(
-                            ui.output_ui('selected_tau'),
-                            ui.input_switch('show_tau', 'Show lead time'),
+                            ui.HTML(
+                                "<script>"
+                                "$(document).ready(function(){"
+                                "$('.rules-heading').on('click', function(){"
+                                "$('.rules-body').toggle('fast');"
+                                "$('.rules-heading.expanded').toggle('fast');"
+                                "$('.rules-heading.contracted').toggle('fast');"
+                                "});"
+                                "});"
+                                "</script>"
+                            ),
+                            ui.div(
+                                ui.HTML(
+                                    '<button class="btn btn-secondary" style="width:100%;padding-top:0px;padding-bottom:0px;">'
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-up" viewBox="0 0 16 16">'
+                                    '<path fill-rule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894l6-3z"/>'
+                                    '</svg>'
+                                    ' What is the objective?'
+                                    '</button>'
+                                ),
+                                {
+                                    "class": "rules-heading expanded",
+                                    "style": "cursor:pointer;max-height:25px;",
+                                }
+                            ),
+                            ui.div(
+                                ui.HTML(
+                                    '<button class="btn btn-secondary" style="width:100%;padding-top:0px;padding-bottom:0px;">'
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-down" viewBox="0 0 16 16">'
+                                    '<path fill-rule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67z"/>'
+                                    '</svg>'
+                                    ' What is the objective?'
+                                    '</button>'
+                                ),
+                                {
+                                    "class": "rules-heading contracted",
+                                    "style": "cursor:pointer;display:none;max-height:25px;"
+                                }
+                            ),
+                            ui.div(
+                                ui.h1(
+                                    'Maintenance game'
+                                ),
+                                ui.p(
+                                    'In the game you have to schedule maintenance for 4 machines at a time. Then, for these machines the cost of maintenance is calculated based on your selected time. '
+                                    'Selecting the desired moment of maintenance is done by choosing a threshold, as soon as the predicted RUL is smaller than or equal to this threshold, maintenance is scheduled. '
+                                    'After submitting your choice, 4 new machines are shown together with a new value for the lead time. '
+                                ),
+                                ui.h5(
+                                    'Selecting a good threshold'
+                                ),
+                                ui.HTML(
+                                    '<p>'
+                                    'When setting the threshold, the current lead times should be held in to account. When it takes spareparts 15 days to be delivered, it would not make sense to set the threshold '
+                                    'lower than 15 days<sup>1</sup>. Conducting maintenance too early (i.e. a high threshold) will mean that a lot of RUL is not used (i.e. high opportunity cost). On the other hand, '
+                                    'Conducting maintenance too late (i.e. low threshold) will mean more machine failures (i.e. high cost of repair). So finding the optimal threshold means finding a middle ground between these two.'
+                                    '</p>'
+                                    '</br>'
+                                    '<p style="font-size:0.9em"><i>1. Of course, as predictions are not perfect, it could still be the case that the optimal threshold is lower than the lead time. In practice, however, this is rarely the case and remains non-sensical.</i></p>'
+                                ),
+                                {
+                                    "class": "rules-body"
+                                }
+                            ),
+                            ui.div(
+                                ui.output_ui('selected_tau'),
+                                x.ui.tooltip(
+                                    ui.div(
+                                        tooltip_icon,
+                                        {"style": "margin:0.9em 0em 0em 0.4em"}
+                                    ),
+                                    'Time between scheduling maintenance and the maintenance actually happening. Keep this in mind when choosing the threshold.',
+                                ),
+                                {'style': "display:inline-flex;"}
+                            ),
                             ui.HTML('<hr>'),
-                            ui.input_slider('game_threshold', 'Threshold', 0, 50, 10),
-                            ui.input_action_button('game_submit', 'Submit!', **{"class": 'btn btn-primary'}),
+                            ui.input_slider(
+                                'game_threshold',
+                                ui.div(
+                                    ui.h5('Threshold (in days)'),
+                                    x.ui.tooltip(
+                                        ui.div(
+                                            tooltip_icon,
+                                            {"style": "margin:0em 0em 0.15em 0.4em"}
+                                        ),
+                                        'Set the threshold. This decides when maintenance is scheduled. (y-axis)'
+                                    ),
+                                    {'style': "display:inline-flex;"}
+                                ),
+                                0,
+                                50,
+                                10
+                            ),
+                            ui.input_action_button('game_submit', 'Select Threshold', **{"class": 'btn btn-primary'}),
                             ui.input_action_button('game_reset_selection', 'Choose new machines!', **{"class": 'btn btn-secondary'}),
                             ui.HTML('<hr>'),
-                            ui.HTML('<h5 style="text-align: center">Total Cost</h5>'),
-                            ui.output_ui('score_history'),
-                            ui.HTML('<hr>'),
-                            ui.HTML('<h5 style="text-align: center">Last Cost</h5>'),
+                            ui.div(
+                                ui.HTML('<h5 style="text-align: center">Cost of last run</h5>'),
+                                x.ui.tooltip(
+                                    ui.div(
+                                        tooltip_icon,
+                                        {'style': "margin:0em 0em 0.8em 0.5em"}
+                                    ),
+                                    'Cost of last round.'
+                                ),
+                                {'style': "display:inline-flex;margin: 0% 30% 0% 30%"}
+                            ),
                             ui.output_ui('score_contents'),
+                            ui.HTML('<hr>'),
+                            ui.div(
+                                ui.HTML('<h5 style="text-align: center">Accumulated Cost</h5>'),
+                                x.ui.tooltip(
+                                    ui.div(
+                                        tooltip_icon,
+                                        {'style': "margin:0em 0em 0.8em 0.5em"}
+                                    ),
+                                    'Total cost over all rounds played. (cumulative)'
+                                ),
+                                {'style': "display:inline-flex;margin: 0% 30% 0% 30%"}
+                            ),
+                            ui.output_ui('score_history'),
                             width=3
                     ),
                     ui.panel_main(
@@ -69,7 +185,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 col=1,
                 x=np.arange(0, timestamp_failure),
                 y=preds[mach, 0:timestamp_failure],
-                name="Predicted RUL",
+                name="Estimated RUL",
                 line={
                     "color": 'blue'
                 },
@@ -116,7 +232,7 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                     "color": 'black'
                 },
                 mode='lines',
-                name="Moment of Maintenance",
+                name="Moment of scheduling maintenance",
                 showlegend=legend
             )
             fig_preds.add_vline(
@@ -125,20 +241,41 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                 x=timestamp_maintenance,
                 line_color="black",
             )
-            if input.show_tau():
-                fig_preds.add_vline(
+            fig_preds.update_yaxes(
+                title_text="Estimated RUL",
+                row=row_num,
+                col=1
+            )
+            if row_num == 4:  # xlabel only for last subplot
+                fig_preds.update_xaxes(
+                    title_text="Days",
+                    title_font_size=30,
                     row=row_num,
-                    col=1,
-                    x=timestamp_maintenance + tau(),
-                    line_color='orange'
+                    col=1
                 )
+            fig_preds.add_vline(
+                row=row_num,
+                col=1,
+                x=timestamp_maintenance + tau(),
+                line_color='orange'
+            )
+            fig_preds.add_scatter(
+                row=row_num,
+                col=1,
+                x=[timestamp_maintenance + tau(), timestamp_maintenance + tau()],
+                y=[0, max(trues[mach, :])],
+                mode='lines',
+                name='Moment of actual maintenance',
+                line_color='orange',
+                showlegend=legend
+            )
             fig_preds.update_xaxes({'range': [0, timestamp_failure]}, row=row_num, col=1)
         # update layout
         fig_preds.update_layout(
             **{
                 "height": 800,
                 "hovermode": "x unified",
-                "title_text": "Simulation RUL for four machines.",
+                "title_text": "Select a threshold to plan maintenance",
                 "title_x": 0.5,
                 "title_font_size": 25,
             }
@@ -180,7 +317,6 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
             optimal_idx = np.argmin(costs)
             cost_optimal = np.round(costs[optimal_idx], 2)
             optimal_threshold = thresholds[optimal_idx]
-            optimal_threshold = 15
             cost_player = np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), input.game_threshold(), cost_reactive, cost_predictive, cost_rul[machs()])), 2)
 
         if cost_optimal < cost_player:

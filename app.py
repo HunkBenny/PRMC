@@ -1,6 +1,6 @@
 from shiny import App, ui
 
-from emp.demo import prmc, eprmc, simulation, info, game, uncertainty, faq
+from emp.demo import prmc, eprmc, info, game, uncertainty, faq
 
 from pathlib import Path
 
@@ -33,15 +33,13 @@ app_ui = ui.page_fluid(
     ui.HTML('<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>'),
     ui.include_css(static / "custom.css"),
     shinyswatch.theme.pulse(),
-    ui.img(src='FlandersMakeUGent.png', style="width:125px;position:fixed;right:0;z-index:1"),
+    ui.img(src='FlandersMakeUGent.png', style="width:125px;position:fixed;right:10px;top:10px;z-index:1"),
     ui.navset_pill(
         info.info_ui('info_ui'),
         game.game_ui('game_ui'),
         ui.nav_menu(
             'Extra',
-            uncertainty.uncertainty_ui('uncertainty_ui', preds),
-            simulation.simulation_ui('simulation_ui'),
-            faq.faq_ui('faq_ui'),
+            faq.faq_ui('faq_ui', preds),
             ui.HTML('<hr style="margin-top:0px;margin-bottom:0px;">'),
             prmc.prmc_ui('prmc_ui', cost_reactive, cost_predictive),
             eprmc.eprmc_ui('eprmc_ui', cost_reactive, cost_predictive),
@@ -54,8 +52,8 @@ def server(input, output, session):
     game.game_server('game_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
     prmc.prmc_server('prmc_ui', preds, trues, num_thresholds)
     eprmc.eprmc_server('eprmc_ui', preds, trues, num_thresholds)
-    simulation.simulation_server('simulation_ui')
     uncertainty.uncertainty_server('uncertainty_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
+    faq.faq_server('faq_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
 
 
 static_dir = Path(__file__).parent / 'static'

@@ -14,9 +14,8 @@ timestep = 0
 selected_cols = ["T24", "T30", "T50", "P30"]
 
 @module.ui
-def simulation_ui():
-    return ui.nav('Simulation',
-        ui.layout_sidebar(
+def simulation_faq_ui():
+    return ui.layout_sidebar(
             ui.panel_sidebar(
                 ui.output_ui("contents"),
                 ui.input_switch('hold', 'Hold'),
@@ -30,11 +29,10 @@ def simulation_ui():
                 output_widget('simulation_plot')
             )
         )
-    )
 
 
 @module.server
-def simulation_server(input, output, session):
+def simulation_faq_server(input, output, session):
     reset = reactive.Value(False)
 
     @reactive.Calc
