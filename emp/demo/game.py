@@ -25,10 +25,18 @@ def game_ui():
                                 "<script>"
                                 "$(document).ready(function(){"
                                 "$('.rules-heading').on('click', function(){"
-                                "$('.rules-body').toggle('fast');"
-                                "$('.rules-heading.expanded').toggle('fast');"
-                                "$('.rules-heading.contracted').toggle('fast');"
-                                "});"
+                                    "$('.rules-body').toggle('fast');"
+                                    "$('.rules-heading.expanded').toggle('fast');"
+                                    "$('.rules-heading.contracted').toggle('fast');"
+                                    "});"
+                                "$('.btn.game-select-threshold').on('click', function(){"
+                                    "$('.btn.game-restart').toggle();"
+                                    "$('.btn.game-select-threshold').toggle();"
+                                    "});"
+                                "$('.btn.game-restart').on('click', function(){"
+                                    "$('.btn.game-select-threshold').toggle();"
+                                    "$('.btn.game-restart').toggle();"
+                                    "});"
                                 "});"
                                 "</script>"
                             ),
@@ -114,8 +122,8 @@ def game_ui():
                                 50,
                                 10
                             ),
-                            ui.input_action_button('game_submit', 'Select Threshold', **{"class": 'btn btn-primary'}),
-                            ui.input_action_button('game_reset_selection', 'Choose new machines!', **{"class": 'btn btn-secondary'}),
+                            ui.input_action_button('game_submit', 'Select Threshold', **{"class": 'btn btn-primary game-select-threshold'}),
+                            ui.input_action_button('game_reset_selection', 'Start new round!', **{"class": 'btn btn-secondary game-restart', "style": "display:none"}),
                             ui.HTML('<hr>'),
                             ui.div(
                                 ui.HTML('<h5 style="text-align: center">Cost of last run</h5>'),
@@ -163,6 +171,72 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
 
     score_user = reactive.Value(0)
     score_cpu = reactive.Value(0)
+
+    @reactive.Effect
+    @reactive.event(input.game_submit)
+    def submit_true():
+        submit.set(True)
+
+    @reactive.Effect
+    @reactive.event(input.game_reset_selection)
+    def game_reset_selection():
+        with reactive.isolate():
+            machs.set(random.sample(range(preds.shape[0]), 4))
+            tau.set(int(np.round(leadtime_dist(), 0)))
+            submit.set(False)
+
+    @output
+    @render.ui
+    def selected_tau():
+        with reactive.isolate():
+            prev_tau.set(tau())
+        return ui.HTML(f'<h3>Current lead time: <a style="color:red;font-size:1.25em"> {tau()}</a></h3>')
+
+    @output
+    @render.ui
+    def score_contents():
+        with reactive.isolate():
+            thresholds = np.linspace(0, 50, 51)
+            costs = [np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), ti, cost_reactive, cost_predictive, cost_rul[machs()])), 2) for ti in thresholds]
+            optimal_idx = np.argmin(costs)
+            cost_optimal = np.round(costs[optimal_idx], 2)
+            optimal_threshold = thresholds[optimal_idx]
+            cost_player = np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), input.game_threshold(), cost_reactive, cost_predictive, cost_rul[machs()])), 2)
+
+        if cost_optimal < cost_player:
+            player_layout = 'class="table-danger"'
+            cpu_layout = 'class="table-success"'
+        elif cost_optimal == cost_player:
+            player_layout = 'class="table-success"'
+            cpu_layout = 'class="table-warning"'
+        else:
+            player_layout = 'class="table-success"'
+            cpu_layout = 'class="table-danger"'
+
+        if submit():
+            with reactive.isolate():
+                score_cpu.set(np.round(score_cpu() + cost_optimal, 2))
+                score_user.set(np.round(score_user() + cost_player, 2))
+                prev_score_html.set(
+                            '<table class="table table-hover">'
+                            f'<tr><th style="text-align:left">Lead time: {prev_tau()}</th><th>Threshold</th><th>Cost</th></tr>'
+                            f'<tr {player_layout} ><td style="text-align:left">Your choice</td><td>{input.game_threshold()}</td><td>{cost_player}</td></tr>'
+                            f'<tr {cpu_layout} ><td style="text-align:left">Optimum</td><td>{int(optimal_threshold)}</td><td>{cost_optimal}</td></tr>'
+                            '</table>'
+                )
+                return ui.HTML(prev_score_html())
+        else:
+            with reactive.isolate():
+                return ui.HTML(prev_score_html())
+
+    @output
+    @render.ui
+    def score_history():
+        return ui.HTML(
+            '<table class="table table-hover">'
+            '<tr><th></th><th class="table-primary">CPU</th><th class="table-primary">PLAYER</th></tr>'
+            f'<tr><th class="table-primary" style="text-align:left">Cost</th><td class="table-secondary">{score_cpu()}</td><td class="table-secondary">{score_user()}</td></tr>'
+        )
 
     @output
     @render_widget  # type: ignore
@@ -253,22 +327,23 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
                     row=row_num,
                     col=1
                 )
-            fig_preds.add_vline(
-                row=row_num,
-                col=1,
-                x=timestamp_maintenance + tau(),
-                line_color='orange'
-            )
-            fig_preds.add_scatter(
-                row=row_num,
-                col=1,
-                x=[timestamp_maintenance + tau(), timestamp_maintenance + tau()],
-                y=[0, max(trues[mach, :])],
-                mode='lines',
-                name='Moment of actual maintenance',
-                line_color='orange',
-                showlegend=legend
-            )
+            with reactive.isolate():
+                fig_preds.add_vline(
+                    row=row_num,
+                    col=1,
+                    x=timestamp_maintenance + tau(),
+                    line_color='orange'
+                )
+                fig_preds.add_scatter(
+                    row=row_num,
+                    col=1,
+                    x=[timestamp_maintenance + tau(), timestamp_maintenance + tau()],
+                    y=[0, max(trues[mach, :])],
+                    mode='lines',
+                    name='Moment of actual maintenance',
+                    line_color='orange',
+                    showlegend=legend
+                )
             fig_preds.update_xaxes({'range': [0, timestamp_failure]}, row=row_num, col=1)
         # update layout
         fig_preds.update_layout(
@@ -282,76 +357,3 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
         )
         return fig_preds
 
-    @reactive.Effect
-    @reactive.event(input.game_reset_selection)
-    def game_reset_selection():
-        with reactive.isolate():
-            machs.set(random.sample(range(preds.shape[0]), 4))
-
-    @reactive.Effect
-    @reactive.event(input.game_submit)
-    def submit_true():
-        submit.set(True)
-
-    @reactive.Effect
-    def submit_slider_change():
-        input.game_threshold()  # called here so the def reacts on changes in the slider
-        with reactive.isolate():
-            submit.set(False)
-
-    @output
-    @render.ui
-    def selected_tau():
-        if submit():
-            with reactive.isolate():
-                prev_tau.set(tau())
-            tau.set(int(np.round(leadtime_dist(), 0)))
-        return ui.HTML(f'<h3>Current lead time: <a style="color:red;font-size:1.25em"> {tau()}</a></h3>')
-
-    @output
-    @render.ui
-    def score_contents():
-        with reactive.isolate():
-            thresholds = np.linspace(0, 50, 51)
-            costs = [np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), ti, cost_reactive, cost_predictive, cost_rul[machs()])), 2) for ti in thresholds]
-            optimal_idx = np.argmin(costs)
-            cost_optimal = np.round(costs[optimal_idx], 2)
-            optimal_threshold = thresholds[optimal_idx]
-            cost_player = np.round(np.sum(calculate_PRMC(preds[machs(), :], trues[machs(), :], prev_tau(), input.game_threshold(), cost_reactive, cost_predictive, cost_rul[machs()])), 2)
-
-        if cost_optimal < cost_player:
-            player_layout = 'class="table-danger"'
-            cpu_layout = 'class="table-success"'
-        elif cost_optimal == cost_player:
-            player_layout = 'class="table-success"'
-            cpu_layout = 'class="table-warning"'
-        else:
-            player_layout = 'class="table-success"'
-            cpu_layout = 'class="table-danger"'
-
-        if submit():
-            with reactive.isolate():
-                score_cpu.set(np.round(score_cpu() + cost_optimal, 2))
-                score_user.set(np.round(score_user() + cost_player, 2))
-                prev_score_html.set(
-                            '<table class="table table-hover">'
-                            f'<tr><th style="text-align:left">Lead time: {prev_tau()}</th><th>Threshold</th><th>Cost</th></tr>'
-                            f'<tr {player_layout} ><td style="text-align:left">Your choice</td><td>{input.game_threshold()}</td><td>{cost_player}</td></tr>'
-                            f'<tr {cpu_layout} ><td style="text-align:left">Optimum</td><td>{int(optimal_threshold)}</td><td>{cost_optimal}</td></tr>'
-                            '</table>'
-                )
-                # new machines:
-                machs.set(random.sample(range(preds.shape[0]), 4))
-                return ui.HTML(prev_score_html())
-        else:
-            with reactive.isolate():
-                return ui.HTML(prev_score_html())
-
-    @output
-    @render.ui
-    def score_history():
-        return ui.HTML(
-            '<table class="table table-hover">'
-            '<tr><th></th><th class="table-primary">CPU</th><th class="table-primary">PLAYER</th></tr>'
-            f'<tr><th class="table-primary" style="text-align:left">Cost</th><td class="table-secondary">{score_cpu()}</td><td class="table-secondary">{score_user()}</td></tr>'
-        )
