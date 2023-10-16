@@ -17,9 +17,10 @@ def faq_ui(preds):
     all_choices.sort()
     return ui.nav('FAQ',
                 ui.h1('FAQ'),
+                ui.hr({"style": "margin-top:0px"}),
                 ui.row(
                     ui.div(
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="false" aria-controls="collapseEight">'
@@ -33,7 +34,24 @@ def faq_ui(preds):
                             ),
                             ui.div(
                                 ui.div(
-                                    'lorem ipsum',
+                                    ui.p(
+                                        'Model selection is done using a metric that evaluates the performance of a model. Traditionally, '
+                                        'these metrics measure statistical performance such as mean squared error. However, these traditional '
+                                        'metrics do not account for organisational performance (i.e costs/benefits). Using cost-based metrics will '
+                                        'lead to better model selection than traditional metrics.'
+                                    ),
+                                    ui.h5('Cost-sensitive tuning'),
+                                    ui.p(
+                                        'One way is to tune the ML-models by use of a cost-sensitive metric, such as the PRMC. '
+                                        'This means that the models are being evaluated by this metric instead of purely statistical metrics. '
+                                        'The selected model will be the model that scores the best on this cost metric. '
+                                    ),
+                                    ui.h5('Cost-sensitive learning'),
+                                    ui.p(
+                                        'Tuning still has its limits, the models are still trained on statistical performance (i.e. the loss / objective function '
+                                        'optimizes statistical performance). Instead, we want to optimize profits directly. Therefore, models can also be trained on '
+                                        'custom loss-measures.  '
+                                    ),
                                     {
                                         'class': 'accordion-body'
                                     }
@@ -50,7 +68,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">'
@@ -81,7 +99,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">'
@@ -147,7 +165,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">'
@@ -216,7 +234,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">'
@@ -231,9 +249,9 @@ def faq_ui(preds):
                             ui.div(
                                 ui.div(
                                     ui.p(
-                                    'Instead of setting one threshold for ALL machines in the dataset, choosing them for the machines individually (or for groups of machines) '
-                                    'will probably be more effective. However, for simplicity reasons, this was left out of the current demo. '
-                                    ''
+                                        'Instead of setting one threshold for ALL machines in the dataset, choosing them for the machines individually (or for groups of machines) '
+                                        'will probably be more effective. However, for simplicity reasons, this was left out of the current demo. '
+                                        'This will definitely be explored in a later stage.'
                                     ),
                                     {
                                         'class': 'accordion-body'
@@ -251,7 +269,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">'
@@ -269,7 +287,7 @@ def faq_ui(preds):
                                         'In parallel shops, when a machine fails, this has no consequences for the other machines. '
                                         'In serial shops, however, there is a dependency between the machines. This means that, '
                                         'when a machine fails, the RUL of the consecutive machines cannot change anymore, as these machines are not being used. '
-                                        'Again, this is possible account for, however, this was left out the demo due for simplicity reasons. '
+                                        'This is currently not implemented in this demo. However, this is a very relevant matter that is part of the further research in this project. '
                                     ),
                                     {
                                         'class': 'accordion-body'
@@ -287,7 +305,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">'
@@ -302,9 +320,9 @@ def faq_ui(preds):
                             ui.div(
                                 ui.div(
                                     ui.p(
-                                        'Conducting predictive maintenance for multiple machines on the same day might also achieve a lower cost than conducting '
-                                        'maintenance for each machine individually.'
-                                        'TBO => Time Between Overhauls'
+                                        'Conducting predictive maintenance for multiple machines on the same day might also achieve a '
+                                        'lower cost than conducting maintenance for each machine individually. This can be accounted for in a '
+                                        'custom evaluation metric. Possible implementations of this should be researched. '
                                     ),
                                     {
                                         'class': 'accordion-body'
@@ -322,7 +340,7 @@ def faq_ui(preds):
                                 'id': 'accordionFAQ'
                             },
                         ),
-                        ui.div(#accordion item
+                        ui.div(  # accordion item
                             ui.h1(
                                 ui.HTML(
                                     '<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">'

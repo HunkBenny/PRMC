@@ -14,7 +14,6 @@ def eprmc_ui(cost_reactive, cost_predictive):
                ui.panel_sidebar(
                    ui.input_numeric('cost_reactive_eprmc', 'Cost Reactive (in thousands)', cost_reactive, step=1),
                    ui.input_numeric('cost_predictive_eprmc', 'Cost Predictive (in thousands)', cost_predictive, step=1),
-                   ui.input_numeric('tau_eprmc', 'Lead Time', 12, step=1),
                    ui.input_numeric('acquisition_price_eprmc', 'Acquisition Price (in thousands)', 50, step=1),
                    ui.input_action_button("compute_eprmc", "Compute!"),
                    width=2.5  # type: ignore

@@ -51,12 +51,12 @@ def game_ui():
                                 ),
                                 {
                                     "class": "rules-heading expanded",
-                                    "style": "cursor:pointer;max-height:25px;",
+                                    "style": "cursor:pointer;display:none;max-height:25px;",
                                 }
                             ),
                             ui.div(
                                 ui.HTML(
-                                    '<button class="btn btn-secondary" style="width:100%;padding-top:0px;padding-bottom:0px;">'
+                                    '<button class="btn btn-info" style="width:100%;padding-top:0px;padding-bottom:0px;">'
                                     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-down" viewBox="0 0 16 16">'
                                     '<path fill-rule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67z"/>'
                                     '</svg>'
@@ -65,7 +65,7 @@ def game_ui():
                                 ),
                                 {
                                     "class": "rules-heading contracted",
-                                    "style": "cursor:pointer;display:none;max-height:25px;"
+                                    "style": "cursor:pointer;max-height:25px;"
                                 }
                             ),
                             ui.div(
@@ -90,7 +90,8 @@ def game_ui():
                                     '<p style="font-size:0.9em"><i>1. Of course, as predictions are not perfect, it could still be the case that the optimal threshold is lower than the lead time. In practice, however, this is rarely the case and remains non-sensical.</i></p>'
                                 ),
                                 {
-                                    "class": "rules-body"
+                                    "class": "rules-body",
+                                    "style": "display:none;"
                                 }
                             ),
                             ui.div(
@@ -126,7 +127,7 @@ def game_ui():
                             ui.input_action_button('game_reset_selection', 'Start new round!', **{"class": 'btn btn-secondary game-restart', "style": "display:none"}),
                             ui.HTML('<hr>'),
                             ui.div(
-                                ui.HTML('<h5 style="text-align: center">Cost of last run</h5>'),
+                                ui.HTML('<h5 style="text-align: center">Cost of last round</h5>  (K€)'),
                                 x.ui.tooltip(
                                     ui.div(
                                         tooltip_icon,
@@ -134,12 +135,12 @@ def game_ui():
                                     ),
                                     'Cost of last round.'
                                 ),
-                                {'style': "display:inline-flex;margin: 0% 30% 0% 30%"}
+                                {'style': "display:inline-flex;margin: 0% 0% 0% 15%"}
                             ),
                             ui.output_ui('score_contents'),
                             ui.HTML('<hr>'),
                             ui.div(
-                                ui.HTML('<h5 style="text-align: center">Accumulated Cost</h5>'),
+                                ui.HTML('<h5 style="text-align: center">Accumulated Cost</h5> (K€)'),
                                 x.ui.tooltip(
                                     ui.div(
                                         tooltip_icon,
@@ -147,7 +148,7 @@ def game_ui():
                                     ),
                                     'Total cost over all rounds played. (cumulative)'
                                 ),
-                                {'style': "display:inline-flex;margin: 0% 30% 0% 30%"}
+                                {'style': "display:inline-flex;margin: 0% 0% 0% 15%"}
                             ),
                             ui.output_ui('score_history'),
                             width=3
@@ -164,6 +165,8 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
     submit = reactive.Value(False)
 
     init_leadtime = int(np.round(leadtime_dist(), 0))
+    while init_leadtime > 30:
+        init_leadtime = int(np.round(leadtime_dist(), 0))
     tau = reactive.Value(init_leadtime)
     prev_tau = reactive.Value(init_leadtime)
 
@@ -183,6 +186,9 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
         with reactive.isolate():
             machs.set(random.sample(range(preds.shape[0]), 4))
             tau.set(int(np.round(leadtime_dist(), 0)))
+            while tau() > 30:
+                tau.set(int(np.round(leadtime_dist(), 0)))
+
             submit.set(False)
 
     @output
