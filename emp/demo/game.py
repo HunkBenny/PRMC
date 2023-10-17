@@ -151,6 +151,7 @@ def game_ui():
                                 {'style': "display:inline-flex;margin: 0% 0% 0% 15%"}
                             ),
                             ui.output_ui('score_history'),
+                            ui.input_action_button('reset_game', 'Reset score', **{"class": 'btn btn-primary'}),
                             width=3
                     ),
                     ui.panel_main(
@@ -363,3 +364,8 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
         )
         return fig_preds
 
+    @reactive.Effect
+    @reactive.event(input.reset_game)
+    def reset_game():
+        score_cpu.set(0)
+        score_user.set(0)
