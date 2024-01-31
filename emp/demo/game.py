@@ -29,6 +29,11 @@ def game_ui():
                                     "$('.rules-heading.expanded').toggle('fast');"
                                     "$('.rules-heading.contracted').toggle('fast');"
                                     "});"
+                                "$('.custom-costs').on('click', function(){"
+                                    "$('.custom-costs-body').toggle('fast');"
+                                    "$('.custom-costs.expanded').toggle('fast');"
+                                    "$('.custom-costs.contracted').toggle('fast');"
+                                    "});"
                                 "$('.btn.game-select-threshold').on('click', function(){"
                                     "$('.btn.game-restart').toggle();"
                                     "$('.btn.game-select-threshold').toggle();"
@@ -152,6 +157,56 @@ def game_ui():
                             ),
                             ui.output_ui('score_history'),
                             ui.input_action_button('reset_game', 'Reset score', **{"class": 'btn btn-primary'}),
+                            ui.HTML('<hr>'),
+                            ui.div(
+                                ui.HTML(
+                                    '<button class="btn btn-primary" style="width:100%;padding-top:0px;padding-bottom:0px;">'
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-up" viewBox="0 0 16 16">'
+                                    '<path fill-rule="evenodd" d="M7.776 5.553a.5.5 0 0 1 .448 0l6 3a.5.5 0 1 1-.448.894L8 6.56 2.224 9.447a.5.5 0 1 1-.448-.894l6-3z"/>'
+                                    '</svg>'
+                                    ' Set custom costs'
+                                    '</button>'
+                                ),
+                                {
+                                    "class": "custom-costs expanded",
+                                    "style": "cursor:pointer;display:none;max-height:25px;",
+                                }
+                            ),
+                            ui.div(
+                                ui.HTML(
+                                    '<button class="btn btn-secondary" style="width:100%;padding-top:0px;padding-bottom:0px;">'
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-compact-down" viewBox="0 0 16 16">'
+                                    '<path fill-rule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67z"/>'
+                                    '</svg>'
+                                    ' Set custom costs'
+                                    '</button>'
+                                ),
+                                {
+                                    "class": "custom-costs contracted",
+                                    "style": "cursor:pointer;max-height:25px;"
+                                }
+                            ),
+                            ui.div(
+                                ui.br(),
+                                ui.input_numeric('cost_machine', 'Cost of a machine (K€)', 40),
+                                ui.input_numeric('cost_reactive', 'Cost reactive maintenance (K€)', 16.667),
+                                ui.input_numeric('cost_predictive', 'Cost predictive maintenance (K€)', 5.556),
+                                ui.div(
+                                    ui.input_action_button('custom_costs_button', 'Submit Custom Cost parameters', **{"class": 'btn btn-primary'}),
+                                    x.ui.tooltip(
+                                        ui.div(
+                                            tooltip_icon,
+                                            {'style': "margin:0em 0em 0.8em 0.5em"}
+                                        ),
+                                        'Costs should be positive.'
+                                    ),
+                                    {'style': "display:inline-flex;"},
+                                ),
+                                {
+                                    "class": "custom-costs-body",
+                                    "style": "display:none;"
+                                },
+                            ),
                             width=3
                     ),
                     ui.panel_main(
@@ -161,7 +216,8 @@ def game_ui():
             )
 
 @module.server
-def game_server(input, output, session, preds, trues, cost_reactive, cost_predictive, cost_rul):
+def game_server(input, output, session, preds, trues, cost_reactive, cost_predictive, cost_rul, useful_lifetimes):
+    cost_rul_temp = cost_rul.copy()
     machs = reactive.Value(random.sample(range(preds.shape[0]), 4))
     submit = reactive.Value(False)
 
@@ -175,6 +231,19 @@ def game_server(input, output, session, preds, trues, cost_reactive, cost_predic
 
     score_user = reactive.Value(0)
     score_cpu = reactive.Value(0)
+
+    @reactive.Effect()
+    @reactive.event(input.custom_costs_button)
+    def set_new_costs():
+        #only positive costs
+        nonlocal cost_rul, cost_predictive, cost_reactive
+        if input.cost_machine() > 0:
+            cost_rul = input.cost_machine() / useful_lifetimes
+        else:
+            cost_rul = cost_rul_temp
+        if ((input.cost_predictive() >= 0) | (input.cost_reactive() >= 0)):
+            cost_predictive = input.cost_predictive()
+            cost_reactive = input.cost_reactive()
 
     @reactive.Effect
     @reactive.event(input.game_submit)

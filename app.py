@@ -18,11 +18,11 @@ with open('data/delme/temp.pkl', 'rb') as r:
 preds = obj['preds']
 trues = obj['trues']
 cost_rul = np.round(obj['cost_rul'] / 1_000_000, 3)
-cost_reactive = np.round(obj['cost_reactive'] / 1_000_000, 3)
-cost_predictive = np.round(obj['cost_predictive'] / 1_000_000, 3)
+useful_lifetimes = (trues == 0).argmax(axis=1) # added 30/01/2024
+cost_reactive = np.round(obj['cost_reactive'] / 1_000_000, 3)  # 16.667
+cost_predictive = np.round(obj['cost_predictive'] / 1_000_000, 3)  # 5.556
 tau = 12
 num_thresholds = 80
-
 
 # app logic:
 
@@ -49,7 +49,7 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
     info.info_server('info_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
-    game.game_server('game_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
+    game.game_server('game_ui', preds, trues, cost_reactive, cost_predictive, cost_rul, useful_lifetimes)
     prmc.prmc_server('prmc_ui', preds, trues, num_thresholds)
     eprmc.eprmc_server('eprmc_ui', preds, trues, num_thresholds)
     uncertainty.uncertainty_server('uncertainty_ui', preds, trues, cost_reactive, cost_predictive, cost_rul)
