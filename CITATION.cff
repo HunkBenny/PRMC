@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: PRMC
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Samuel
+    family-names: Bakker
+    email: samuel.bakker@ugent.be
+    affiliation: Ghent University
+    orcid: 'https://orcid.org/0009-0003-4007-5808'
+  - given-names: Shimanto
+    family-names: Rahman
+    email: shimanto.rahman@ugent.be
+    affiliation: Ghent University
+    orcid: 'https://orcid.org/0000-0001-8636-8970'
+  - given-names: Matthias
+    family-names: Bogaert
+    email: matthias.bogaert@ugent.be
+    affiliation: Ghent University
+    orcid: 'https://orcid.org/0000-0002-4502-0764'
+repository-code: 'https://github.com/HunkBenny/PRMC'
