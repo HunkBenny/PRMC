@@ -13,15 +13,16 @@ authors:
     email: samuel.bakker@ugent.be
     affiliation: Ghent University
     orcid: 'https://orcid.org/0009-0003-4007-5808'
-  - given-names: Shimanto
-    family-names: Rahman
-    email: shimanto.rahman@ugent.be
-    affiliation: Ghent University
-    orcid: 'https://orcid.org/0000-0001-8636-8970'
   - given-names: Matthias
     family-names: Bogaert
     email: matthias.bogaert@ugent.be
     affiliation: Ghent University
     orcid: 'https://orcid.org/0000-0002-4502-0764'
-version: 0.1.0
+  - given-names: Shimanto
+    family-names: Rahman
+    email: shimanto.rahman@ugent.be
+    affiliation: Ghent University
+    orcid: 'https://orcid.org/0000-0001-8636-8970'
 repository-code: 'https://github.com/HunkBenny/PRMC'
+version: 0.1.0
+date-released: '2023-09-01'
