@@ -23,4 +23,5 @@ authors:
     email: matthias.bogaert@ugent.be
     affiliation: Ghent University
     orcid: 'https://orcid.org/0000-0002-4502-0764'
+version: 0.1.0
 repository-code: 'https://github.com/HunkBenny/PRMC'
