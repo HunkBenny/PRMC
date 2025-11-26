@@ -51,3 +51,14 @@ In both notebooks, after the "ANALYSIS" cell, an analysis is done with use of th
 
 #### instance-based PRMC for XGBoost was loosely based on:
 https://github.com/bram-janssens/B2Boost
+
+
+## License
+ 
+This project is released under **MIT + Common Clause v1.0**.
+ 
+- Free for academic, personal, and internal use.
+- **Commercial use is NOT permitted** unless explicit written permission is given.
+- If you wish to obtain a commercial license, please contact the author.
+ 
+See `LICENSE` for full terms and third-party component licenses.
