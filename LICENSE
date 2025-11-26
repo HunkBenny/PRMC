@@ -1,6 +1,6 @@
-MIT License
+MIT License + Common Clause Condition v1.0
 
-Copyright (c) 2023 Sam Bakker
+Copyright (c) 2023 Sam Bakker, Shimanto Rahman, and Matthias Bogaert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------
+Common Clause License Condition v1.0
+-------------------------------------------------------
+ 
+"Sell" means practicing any or all of the rights granted to you under the 
+License to provide to third parties, for a fee or other consideration 
+(including without limitation fees for hosting or consulting/support services), 
+a product or service whose value derives substantially from the functionality 
+of the Software. Any licensee that wishes to Sell the Software must obtain a 
+separate commercial license from the Licensor.
+ 
+The Licensor grants you permission to use, copy, modify, and distribute the 
+Software, but you may not Sell the Software or services whose value is 
+substantially derived from the Software without explicit written permission 
+from the Licensor.
 
 ==
 
